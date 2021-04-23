@@ -2,7 +2,7 @@
 This hosts the code for the paper, based on https://github.com/j-luo93/xib. Currently still cleaning up.
 
 # Clean-up plan
-[ ] phonological embedding composition 
+[x] phonological embedding composition 
 [ ] pretrained phonological embedding
 [ ] core IPA helper modules
 [ ] core aligned corpus helper modules
