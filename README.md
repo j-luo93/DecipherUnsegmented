@@ -11,7 +11,7 @@ This hosts the code for the paper, based on https://github.com/j-luo93/xib. Curr
 * [ ] notebooks and scripts
 
 # Install
-* Clone this repository recursively `git clone --recurvise <link>`.
+* Clone this repository recursively `git clone --recursive <link>`.
 * `pip install -r requirements.txt` to install Python dependencies
 * Install `pytorch`
 * Install `dev_misc` by running `cd dev_misc & pip install -e .`
