@@ -2,19 +2,39 @@
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Dict, Generic, List, TypeVar, Union
+from dataclasses import dataclass, field, replace
+from typing import (ClassVar, Dict, Generic, Iterator, List, Optional, TypeVar,
+                    Union)
 
 
 @dataclass
 class Category:
     name: str
+    # A one-letter code to represent the group of this category of features.
+    # p: for ptype only
+    # c: consonants
+    # v: vowels
+    # d: diacritics
+    # s: suprasegmental
+    # t: tone
+    group: str = field(init=False)
+    # This is set to None, and should be set by `OrderedCollection`.
+    idx: Optional[int] = field(init=False, default=None)
+
+    def __post_init__(self):
+        if self.name == 'ptype':
+            self.group = 'p'
+        else:
+            self.group = self.name[0]  # The first letter is always the group code.
+            if self.group not in ['c', 'v', 'd', 's', 't']:
+                raise ValueError(f'Unrecognized group code {self.group}.')
 
 
 @dataclass
 class Feature:
     category: Category
     name: str
+    idx: Optional[int] = None
 
 
 ItemType = TypeVar('ItemType', Category, Feature)
@@ -24,11 +44,39 @@ class OrderedCollection(Generic[ItemType]):
     """Represents an ordered collection of items (basically list).
 
     The items can be instances of `Category` or `Feature`.
+    Note that every collection ever created will be stored in the class variable,
+    and no duplicate name is allowed.
     """
 
+    _instances: ClassVar[Dict[str, OrderedCollection]] = dict()
+
     def __init__(self, name: str, items: List[ItemType]):
+        """Creates an `OrderedCollection` instance consisting of `items`.
+
+        Args:
+            name (str): the name for this instance.
+            items (List[ItemType]): the items in this instance.
+
+        Raises:
+            RuntimeError: duplicate name is provided.
+            RuntimeError: some item in `items` has been indexed before.
+            ValueError: some items in `items` have duplicate names.
+        """
+        # Check no duplicate name first.
+        cls = type(self)
+        if name in cls._instances:
+            raise RuntimeError(f'A collection named "{name}" has been created before.')
+        cls._instances[name] = self
+
+        # Set the index for each item starting from 0. Note that we assert it has not bee indexed before.
+        for i, item in enumerate(items):
+            if item.idx is not None:
+                raise RuntimeError(f'This item has been indexed before.')
+            item.idx = i
+
         self.name = name
         self.items = items
+        # name-to-item mapping, used for `__getitem__` when calling with `str`.
         self._name2item: Dict[str, ItemType] = {item.name: item for item in items}
         if len(self._name2item) != len(self.items):
             raise ValueError(f'Some items have duplicate names.')
@@ -42,6 +90,16 @@ class OrderedCollection(Generic[ItemType]):
     def __repr__(self):
         return f'"{self.name}" collection, size {len(self.items)}'
 
+    def __iter__(self) -> Iterator[ItemType]:
+        yield from self.items
+
+    def __len__(self):
+        return len(self.items)
+
+    @classmethod
+    def get_instance(cls, name: str) -> OrderedCollection[ItemType]:
+        return cls._instances[name]
+
     @classmethod
     def chain(cls, name: str, *collections: OrderedCollection[ItemType]) -> OrderedCollection[ItemType]:
         """Chains a list of `OrderedCollection` instances and make a new one made up all the items. Order is preserved.
@@ -54,7 +112,8 @@ class OrderedCollection(Generic[ItemType]):
         """
         chained_items = list()
         for collection in collections:
-            chained_items.extend(collection.items)
+            # NOTE(j_luo) (Shallow-)copy the dataclass since indices will be changed after chaining.
+            chained_items.extend([replace(item) for item in collection.items])
         return cls(name, chained_items)
 
 # -------------------------------------------------------------- #
