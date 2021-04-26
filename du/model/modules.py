@@ -74,7 +74,8 @@ def assign_names(tensor: Tensor, names: Sequence[str]) -> None:
 class EmbeddingParams:
     num_features: int
     embed_dim: int
-    feat_groups: str  # a `str` object containing all one-lettered feature group codes. See `Category` in `ipa_data.py` for more details.
+    # a `str` object containing all one-lettered feature group codes. See `Category` in `ipa_data.py` for more details.
+    feat_groups: str
     init_interval: Optional[float] = None
 
 

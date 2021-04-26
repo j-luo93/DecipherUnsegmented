@@ -19,5 +19,5 @@ This hosts the code for the paper, based on https://github.com/j-luo93/xib.
 * Install this repository by running `pip install -e .` in the root directory
 
 # Run
-The main repo is still being cleaned up, but you can see `du/demo_compose.py` for a demo script to compose phonological embeddings
+The main repo is still being cleaned up, but you can see `scripts/demo_compose.py` for a demo script to compose phonological embeddings
 based on IPA transcriptions.
