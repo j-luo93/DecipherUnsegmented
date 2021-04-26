@@ -1,15 +1,13 @@
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from typing import Dict, Optional, Sequence, Union
 
 import torch
-from torch._C import Value
 import torch.nn as nn
 from dev_misc import get_tensor
 from dev_misc.devlib import BT, FT, LT
-from dev_misc.devlib.helper import get_range
 from du.ipa.ipa_data import CATEGORIES, OrderedCollection
-from numpy import fix
+from torch._C import Value
 from torch.autograd.grad_mode import F
 
 Tensor = torch.Tensor
@@ -76,7 +74,7 @@ def assign_names(tensor: Tensor, names: Sequence[str]) -> None:
 class EmbeddingParams:
     num_features: int
     embed_dim: int
-    feat_groups: str  # a `str` object containing all one-lettered feature group codes.
+    feat_groups: str  # a `str` object containing all one-lettered feature group codes. See `Category` in `ipa_data.py` for more details.
     init_interval: Optional[float] = None
 
 

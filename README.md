@@ -1,9 +1,10 @@
-# D'cipherUnsegmented
-This hosts the code for the paper, based on https://github.com/j-luo93/xib. Currently still cleaning up.
+# DecipherUnsegmented
+This hosts the code for the paper, based on https://github.com/j-luo93/xib.
 
 # Clean-up plan
-* [x] phonological embedding composition 
+* [x] phonological embedding composition
 * [x] modules to compose embeddings
+* [x] demo script for composing embeddings
 * [ ] pretrained phonological embedding
 * [ ] core IPA helper modules
 * [ ] core aligned corpus helper modules
@@ -15,3 +16,8 @@ This hosts the code for the paper, based on https://github.com/j-luo93/xib. Curr
 * `pip install -r requirements.txt` to install Python dependencies
 * Install `pytorch`
 * Install `dev_misc` by running `cd dev_misc & pip install -e .`
+* Install this repository by running `pip install -e .` in the root directory
+
+# Run
+The main repo is still being cleaned up, but you can see `du/demo_compose.py` for a demo script to compose phonological embeddings
+based on IPA transcriptions.

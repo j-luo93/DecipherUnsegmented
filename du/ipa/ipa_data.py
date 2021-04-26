@@ -18,7 +18,7 @@ class Category:
     # s: suprasegmental
     # t: tone
     group: str = field(init=False)
-    # This is set to None, and should be set by `OrderedCollection`.
+    # This is set to None by default, and should be set by `OrderedCollection`.
     idx: Optional[int] = field(init=False, default=None)
 
     def __post_init__(self):
@@ -46,6 +46,7 @@ class OrderedCollection(Generic[ItemType]):
     The items can be instances of `Category` or `Feature`.
     Note that every collection ever created will be stored in the class variable,
     and no duplicate name is allowed.
+    The `idx` field in these items will be set after calling `__init__` on `OrderedCollection`.
     """
 
     _instances: ClassVar[Dict[str, OrderedCollection]] = dict()
@@ -102,7 +103,11 @@ class OrderedCollection(Generic[ItemType]):
 
     @classmethod
     def chain(cls, name: str, *collections: OrderedCollection[ItemType]) -> OrderedCollection[ItemType]:
-        """Chains a list of `OrderedCollection` instances and make a new one made up all the items. Order is preserved.
+        """Chains a list of `OrderedCollection` instances and make a new one made up all the items.
+
+        Note that order is preserved and the new items will have a new name with the format "{collection}/{name}",
+        where "collection" is the the name of the original collection it belongs to, and
+        "name" is its original name.
 
         Args:
             name (str): the name of the chained collection.
@@ -112,8 +117,9 @@ class OrderedCollection(Generic[ItemType]):
         """
         chained_items = list()
         for collection in collections:
-            # NOTE(j_luo) (Shallow-)copy the dataclass since indices will be changed after chaining.
-            chained_items.extend([replace(item) for item in collection.items])
+            # NOTE(j_luo) (Shallow-)copy the dataclass since indices will be changed after chaining. Remember to modify the `idx` and the `name` fields.
+            chained_items.extend(
+                [replace(item, idx=None, name=f'{collection.name}/{item.name}') for item in collection.items])
         return cls(name, chained_items)
 
 # -------------------------------------------------------------- #
@@ -215,8 +221,8 @@ T_GLOBAL_FEATS = OrderedCollection('t_global',
                                     for name in ['none', 'downstep']])
 
 # Put all features in a collection.
-PHONO_FEATS = OrderedCollection.chain('phono',
-                                      PTYPE_FEATS, C_VOICING_FEATS, C_PLACE_FEATS, C_MANNER_FEATS,
-                                      V_HEIGHT_FEATS, V_BACKNESS_FEATS, V_ROUNDNESS_FEATS, DIACRITICS_FEATS,
-                                      S_STRESS_FEATS, S_LENGTH_FEATS, S_BREAK_FEATS, T_LEVEL_FEATS,
-                                      T_CONTOUR_FEATS, T_GLOBAL_FEATS)
+FEAT_ORDER = [PTYPE_FEATS, C_VOICING_FEATS, C_PLACE_FEATS, C_MANNER_FEATS,
+              V_HEIGHT_FEATS, V_BACKNESS_FEATS, V_ROUNDNESS_FEATS, DIACRITICS_FEATS,
+              S_STRESS_FEATS, S_LENGTH_FEATS, S_BREAK_FEATS, T_LEVEL_FEATS,
+              T_CONTOUR_FEATS, T_GLOBAL_FEATS]
+PHONO_FEATS = OrderedCollection.chain('phono', *FEAT_ORDER)
