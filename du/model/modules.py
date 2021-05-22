@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from dataclasses import dataclass
 from typing import Dict, Optional, Sequence, Union
@@ -6,7 +8,7 @@ import torch
 import torch.nn as nn
 from dev_misc import get_tensor
 from dev_misc.devlib import BT, FT, LT
-from du.ipa.ipa_data import CATEGORIES, OrderedCollection
+from du.ipa.ipa_data import CATEGORIES, PHONO_FEATS, OrderedCollection
 from torch._C import Value
 from torch.autograd.grad_mode import F
 
@@ -85,6 +87,33 @@ class FeatEmbedding(nn.Module):
         super().__init__()
         self.emb_params = emb_params
         self._build()
+
+    @classmethod
+    def from_pretrained(cls, emb_params: EmbeddingParams, saved_dict: Dict[str, Tensor]) -> FeatEmbedding:
+        """Loads a pretrained `FeatEmbedding` module from old `saved_dict`.
+
+        Args:
+            emb_params (EmbeddingParams): the hyperparameter object.
+            saved_dict (Dict[str, Tensor]): the dictionary that stores the parameters.
+
+        Returns:
+            FeatEmbedding: the pretrained module.
+        """
+        mod = cls(emb_params)
+        weight = torch.zeros(emb_params.num_features, emb_params.embed_dim)
+        c_idx = saved_dict['base_embeddings.c_idx']
+        for i in c_idx:
+            cat = CATEGORIES[i.item()]  # NOTE(j_luo) Call `.item()` to turn it into proper `int`.
+            cat_weight = saved_dict[f'base_embeddings.embed_layer.{cat.name.upper()}']
+            # Get the starting index by using the first (local) feature of this category.
+            cat_collection = OrderedCollection.get_instance(cat.name)
+            first_feat_name = cat_collection[0].name
+            start = PHONO_FEATS[f'{cat.name}/{first_feat_name}'].idx
+            # Get the ending index.
+            end = start + len(cat_collection)
+            weight[start: end] = cat_weight
+        mod.load_state_dict({'c_idx': c_idx, 'embed.weight': weight})  # type: ignore
+        return mod
 
     def _build(self) -> None:
         """Builds this module.

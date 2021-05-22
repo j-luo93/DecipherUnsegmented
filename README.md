@@ -5,7 +5,7 @@ This hosts the code for the paper, based on https://github.com/j-luo93/xib.
 * [x] phonological embedding composition
 * [x] modules to compose embeddings
 * [x] demo script for composing embeddings
-* [ ] pretrained phonological embedding
+* [x] pretrained phonological embedding
 * [ ] core IPA helper modules
 * [ ] core aligned corpus helper modules
 * [ ] core training and model modules

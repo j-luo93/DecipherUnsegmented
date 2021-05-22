@@ -229,7 +229,7 @@ T_GLOBAL_FEATS = OrderedCollection('t_global',
                                     for name in ['none', 'downstep']])
 
 # Put all features in a collection. This collection reindexes every feature and assign a new "global" index to them.
-# The original index can be accessed in the feature's own feature group.
+# The original index can be accessed in the feature's own feature category.
 # For instance, for "close" feature of vowel height.
 # `PHONO_FEATS["v_height/close"].idx` returns its global index,
 # `V_HEIGHT_FEATS["close"].idx` returns its local index.

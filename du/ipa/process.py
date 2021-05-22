@@ -34,7 +34,7 @@ def get_feat_matrices(inputs: List[str], return_global_index: bool = True) -> Tu
 
     Args:
         inputs (List[str]): a list of IPA transcriptions.
-        return_global_index (bool, optional): flag to return global index, the index in `PHONO_FEATS` that contains all phonological features across all groups. If `False`, returns the local index, the index in its feature group. See the comments above `PHONO_FEATS` in `ipa_data.py` for an example of global and local indices. Defaults to True.
+        return_global_index (bool, optional): flag to return global index, the index in `PHONO_FEATS` that contains all phonological features across all categories. If `False`, returns the local index, the index in its feature category. See the comments above `PHONO_FEATS` in `ipa_data.py` for an example of global and local indices. Defaults to True.
 
     Returns:
         Tuple[LT, BT]: a (batched feature matrix, padding) tuple.
@@ -44,19 +44,19 @@ def get_feat_matrices(inputs: List[str], return_global_index: bool = True) -> Tu
         feat_mat = list()
         for char in IPAString(unicode_string=inp):
             feat_vec = list()
-            for feat_group in FEAT_ORDER:
+            for feat_cat in FEAT_ORDER:
                 # Obtain the phonological feature from `ipapy`'s API.
-                dg = name2dg[feat_group.name]
+                dg = name2dg[feat_cat.name]
                 feat_name = char.dg_value(dg)
-                feat_name = feat_name or 'none'  # Use "none" if it doesn't have this feature group.
+                feat_name = feat_name or 'none'  # Use "none" if it doesn't have this feature category.
                 feat_name = feat_name.replace('-', '_')  # Replace hyphens with underscores.
 
                 # Get the corresponding `Feature` instance based on name lookup.
                 if return_global_index:
-                    # NOTE(j_luo) Use the proper name "{feature_group}/{feature}" for lookup.
-                    feat = PHONO_FEATS[f'{feat_group.name}/{feat_name}']
+                    # NOTE(j_luo) Use the proper name "{feature_category}/{feature}" for lookup.
+                    feat = PHONO_FEATS[f'{feat_cat.name}/{feat_name}']
                 else:
-                    feat = feat_group[feat_name]
+                    feat = feat_cat[feat_name]
                 # We only need the feature index for the embedding layer.
                 feat_vec.append(feat.idx)
             feat_mat.append(feat_vec)
