@@ -10,6 +10,7 @@ from typing import (ClassVar, Dict, Generic, Iterator, List, Optional, TypeVar,
 @dataclass
 class Category:
     name: str
+
     # A one-letter code to represent the group of this category of features.
     # p: for ptype only
     # c: consonants
@@ -18,6 +19,7 @@ class Category:
     # s: suprasegmental
     # t: tone
     group: str = field(init=False)
+
     # This is set to None by default, and should be set by `OrderedCollection`.
     idx: Optional[int] = field(init=False, default=None)
 
@@ -77,6 +79,7 @@ class OrderedCollection(Generic[ItemType]):
 
         self.name = name
         self.items = items
+
         # name-to-item mapping, used for `__getitem__` when calling with `str`.
         self._name2item: Dict[str, ItemType] = {item.name: item for item in items}
         if len(self._name2item) != len(self.items):
@@ -129,13 +132,18 @@ class OrderedCollection(Generic[ItemType]):
 
 CATEGORIES = OrderedCollection('category',
                                [Category(name) for name in ['ptype',
+
                                                             # Available for consonants.
                                                             'c_voicing', 'c_place', 'c_manner',
+
                                                             # Available for vowels.
                                                             'v_height', 'v_backness', 'v_roundness',
+
                                                             'diacritics',
+
                                                             # Available for suprasegmentals.
                                                             's_stress', 's_length', 's_break',
+
                                                             # Available for tones
                                                             't_level', 't_contour', 't_global']])
 
@@ -220,7 +228,11 @@ T_GLOBAL_FEATS = OrderedCollection('t_global',
                                    [Feature(CATEGORIES['t_global'], name)
                                     for name in ['none', 'downstep']])
 
-# Put all features in a collection.
+# Put all features in a collection. This collection reindexes every feature and assign a new "global" index to them.
+# The original index can be accessed in the feature's own feature group.
+# For instance, for "close" feature of vowel height.
+# `PHONO_FEATS["v_height/close"].idx` returns its global index,
+# `V_HEIGHT_FEATS["close"].idx` returns its local index.
 FEAT_ORDER = [PTYPE_FEATS, C_VOICING_FEATS, C_PLACE_FEATS, C_MANNER_FEATS,
               V_HEIGHT_FEATS, V_BACKNESS_FEATS, V_ROUNDNESS_FEATS, DIACRITICS_FEATS,
               S_STRESS_FEATS, S_LENGTH_FEATS, S_BREAK_FEATS, T_LEVEL_FEATS,

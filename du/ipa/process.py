@@ -3,7 +3,7 @@ from typing import List, Tuple
 from dev_misc import LT
 from dev_misc.devlib import BT
 from dev_misc.devlib.helper import get_tensor, pad_to_dense
-from du.ipa.ipa_data import FEAT_ORDER
+from du.ipa.ipa_data import FEAT_ORDER, PHONO_FEATS
 from du.model.modules import assign_names
 from ipapy.ipachar import (DG_C_MANNER, DG_C_PLACE, DG_C_VOICING,
                            DG_DIACRITICS, DG_S_BREAK, DG_S_LENGTH, DG_S_STRESS,
@@ -29,11 +29,12 @@ name2dg = {
 }
 
 
-def get_feat_matrices(inputs: List[str]) -> Tuple[LT, BT]:
+def get_feat_matrices(inputs: List[str], return_global_index: bool = True) -> Tuple[LT, BT]:
     """Get batched feature matrices based on `inputs`.
 
     Args:
         inputs (List[str]): a list of IPA transcriptions.
+        return_global_index (bool, optional): flag to return global index, the index in `PHONO_FEATS` that contains all phonological features across all groups. If `False`, returns the local index, the index in its feature group. See the comments above `PHONO_FEATS` in `ipa_data.py` for an example of global and local indices. Defaults to True.
 
     Returns:
         Tuple[LT, BT]: a (batched feature matrix, padding) tuple.
@@ -49,12 +50,18 @@ def get_feat_matrices(inputs: List[str]) -> Tuple[LT, BT]:
                 feat_name = char.dg_value(dg)
                 feat_name = feat_name or 'none'  # Use "none" if it doesn't have this feature group.
                 feat_name = feat_name.replace('-', '_')  # Replace hyphens with underscores.
+
                 # Get the corresponding `Feature` instance based on name lookup.
-                feat = feat_group[feat_name]
+                if return_global_index:
+                    # NOTE(j_luo) Use the proper name "{feature_group}/{feature}" for lookup.
+                    feat = PHONO_FEATS[f'{feat_group.name}/{feat_name}']
+                else:
+                    feat = feat_group[feat_name]
                 # We only need the feature index for the embedding layer.
                 feat_vec.append(feat.idx)
             feat_mat.append(feat_vec)
         batched_feat_mat.append(feat_mat)
+
     # Pad the matrix to the same length.
     matrix, padding = pad_to_dense(batched_feat_mat, dtype='long', use_3d=True, length_3d=len(FEAT_ORDER))
     matrix = get_tensor(matrix)
