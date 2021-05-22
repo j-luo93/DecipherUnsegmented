@@ -1,6 +1,8 @@
 """A simple demo script for load a pretrained `FeatEmbedding` module that composes phonological embeddings from feature matrices.
 """
 import torch
+import pandas as pd
+import pickle
 from du.ipa.ipa_data import PHONO_FEATS
 from du.ipa.process import get_feat_matrices
 from du.model.modules import EmbeddingParams, FeatEmbedding
@@ -12,5 +14,12 @@ if __name__ == '__main__':
     embed_layer = FeatEmbedding.from_pretrained(emb_params, saved_dict)
 
     # Use `get_feature_matrices` to convert a list of IPA transcriptions to a batched feature matrix (stored as a tensor).
-    fm, padding = get_feat_matrices(['æpəl', 'bənænə'])
-    print(embed_layer(fm, padding=padding))
+    with open('data/segments.pkl', 'rb') as fin:
+        segments = pickle.load(fin)
+        # Each segment is treated as a sequence of length 1.
+        fm, padding = get_feat_matrices(segments)
+        emb = embed_layer(fm, padding=padding)[:, 0]  # Only take the first character in the sequence.
+        emb_df = pd.DataFrame(emb.detach().cpu().numpy())
+        seg_df = pd.DataFrame(segments)
+        emb_df.to_csv('data/segments.emb.tsv', sep='\t', index=False)
+        seg_df.to_csv('data/segments.tsv', sep='\t', index=False)
