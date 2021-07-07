@@ -26,3 +26,6 @@ This hosts the code for the paper, based on https://github.com/j-luo93/xib.
 `python scripts/demo_pretrained.py`, you would obtain two files:
 `data/segments.emb.tsv` and `data/segments.tsv`.
 Go to the [embedding projector](https://projector.tensorflow.org/) to visualize the embeddings by uploading both files.
+
+# Data
+* Iberian data is included in the repo. Three files are included: the original `data/hesperia_epigraphy.csv` that contains the published data from [Hesperia](http://hesperia.ucm.es/en/proyecto_hesperia.php), a Jupyter notebook `notebooks/clean_iberian.ipynb` that I used to clean up the data, and finally the cleaned csv `data/iberian.csv`.
